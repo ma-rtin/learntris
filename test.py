@@ -8,12 +8,12 @@ import fileinput
 
 
 
-def ausgeben(matrix):
-    zeilenAnzahl = len(matrix)
-    spaltenAnzahl = len(matrix[0])
+def ausgeben(matrix, offsetLinks, offsetRechts, offsetUnten):
+    zeilenAnzahl = len(matrix)-offsetUnten
+    spaltenAnzahl = len(matrix[0]) - offsetRechts-offsetLinks
     for zeile in range(zeilenAnzahl):
         for spalte in range(spaltenAnzahl):
-            sys.stdout.write(matrix[zeile][spalte]+" ")
+            sys.stdout.write(matrix[zeile][spalte+offsetLinks]+" ")
         sys.stdout.write("\n")
     return
 
@@ -32,14 +32,14 @@ def matrixEinlesen(matrix):
         eingabe=raw_input()
         eingabe=eingabe.split(' ')
         for spalte in range(10):
-            matrix[zeile][spalte]=eingabe[spalte]
+            matrix[zeile][spalte+1]=eingabe[spalte]
 
     return
 
 def matrixLeeren(matrix):
     for zeile in range(22):
         for spalte in range(10):
-            matrix[zeile][spalte]='.'
+            matrix[zeile][spalte+1]='.'
     return
 
 def zeigeZahl(zahl):
@@ -50,11 +50,11 @@ def matrixSimulation(matrix, score, clearedLines):
     for zeile in range(22):
         zeileVoll=True
         for spalte in range(10):
-            if matrix[zeile][spalte]=='.':
+            if matrix[zeile][spalte+1]=='.':
                 zeileVoll = False
         if zeileVoll:
             for spalte in range(10):
-                matrix[zeile][spalte]='.'
+                matrix[zeile][spalte+1]='.'
             score=score+100
             clearedLines = clearedLines+1
     return [score,clearedLines]
@@ -129,9 +129,9 @@ def tetInMatrix(matrix, tet, posTet, caps):
     for zeile in range(anzahlZeilen):
         for spalte in range(anzahlSpalten):
             # Seitenrand testen
-            if (posTet[1]+spalte)>=0 and (posTet[1]+spalte)<=(len(matrix[0])-1):
+            if (posTet[1]+spalte)>=1 and (posTet[1]+spalte)<=(len(matrix[0])-2):
                 # Unteren Rand testen
-                if (posTet[0]+zeile) <= (len(matrix)-1):
+                if (posTet[0]+zeile) <= (len(matrix)-2):
                     hilfsstring=tet[zeile][spalte]
                     hilfsstring=str(hilfsstring)
                     if caps:
@@ -141,7 +141,7 @@ def tetInMatrix(matrix, tet, posTet, caps):
 
 def nachLinks(matrix, activeTetramino, posTet, randRahmen):
     moeglich=False
-    if posTet[1] > 0:
+    if posTet[1] > 1:
         moeglich = True
     else:
         linkeSpalteLeer = True
@@ -159,13 +159,13 @@ def nachLinks(matrix, activeTetramino, posTet, randRahmen):
             randRahmen[1]=  randRahmen[1]-1
         # frei gewordenen Bereich leeren
         for zeile in range(len(activeTetramino)):
-            if (rechteSpalte+1)<len(matrix[0]):
+            if (rechteSpalte+1)<len(matrix[0])-1:
                 matrix[posTet[0]+zeile][rechteSpalte+1]='.'
     return [posTet, randRahmen]
 
 def nachRechts(matrix, activeTetramino, posTet, randRahmen):
     moeglich=False
-    if (posTet[1]+len(activeTetramino)-1) < (len(matrix[0])-1):
+    if (posTet[1]+len(activeTetramino)-1) < (len(matrix[0])-2):
         moeglich=True
     else:
         rechteSpalteLeer = True
@@ -182,7 +182,7 @@ def nachRechts(matrix, activeTetramino, posTet, randRahmen):
             randRahmen[0] = randRahmen[0]-1
         # frei gewordenen Bereich leeren
         for zeile in range(len(activeTetramino)):
-            if (posTet[1]-1)>=0:
+            if (posTet[1]-1)>=1:
                 matrix[posTet[0]+zeile][posTet[1]-1]='.'
     return [posTet, randRahmen]
 
@@ -191,7 +191,7 @@ def nachUnten(matrix, activeTetramino, posTet, randRahmen):
     moeglichBlock = True
     moeglichSpielfeld = False
     # Werden die Spielfeld abmessungen eingehalten?
-    if (posTet[0]+len(activeTetramino))<len(matrix):
+    if (posTet[0]+len(activeTetramino))<len(matrix)-1:
         moeglichSpielfeld = True
     else:
         untereZeileLeer = True
@@ -203,7 +203,7 @@ def nachUnten(matrix, activeTetramino, posTet, randRahmen):
             randRahmen[2]= randRahmen[2]+1
     if moeglichSpielfeld:
         # Anderer Block im Weg?
-        if (posTet[0]+len(activeTetramino))<len(matrix): #falls noch nicht ganz unten 
+        if (posTet[0]+len(activeTetramino))<len(matrix)-1: #falls noch nicht ganz unten 
             for spalte in range(len(activeTetramino[0])):
                 if matrix[posTet[0]+len(activeTetramino)][posTet[1]+spalte]!='.':
                     moeglichBlock=False
@@ -225,6 +225,16 @@ def hardDrop(matrix, activeTet, posTet, randRahmen):
     matrix = tetInMatrix(matrix, activeTet, posTet, False)
     return matrix
 
+#def randRahmenErmitteln(matrix, activeTetramino, posTet, randRahmen)
+    #links:
+
+    #rechts:
+
+    #unten:
+
+
+#    return randRahmen
+
 def inputVerarbeiten(matrix, activeTetramino, posTet, score, clearedLines, randRahmen):
     cmd=raw_input()
     #cmdListe=cmd.split(' ')
@@ -235,7 +245,7 @@ def inputVerarbeiten(matrix, activeTetramino, posTet, score, clearedLines, randR
         if cmdListe[eingabe]=="q":
             sys.exit()
         elif cmdListe[eingabe]=="p":
-            ausgeben(matrix)
+            ausgeben(matrix,1,1,1)
         elif cmdListe[eingabe]=="g":
             matrixEinlesen(matrix)
         elif cmdListe[eingabe]=="?":
@@ -252,35 +262,35 @@ def inputVerarbeiten(matrix, activeTetramino, posTet, score, clearedLines, randR
             clearedLines=ergebnis[1]
         #aktives Tetramino setzen:
         elif cmdListe[eingabe]=="I":
-            posTet = [0,3]
+            posTet = [0,4]
             randRahmen = [0,0,0]
             activeTetramino = setTetramino("I")
         elif cmdListe[eingabe]=="O":
-            posTet = [0,4]
+            posTet = [0,5]
             randRahmen = [0,0,0]
             activeTetramino = setTetramino("O")
         elif cmdListe[eingabe]=="Z":
-            posTet = [0,3]
+            posTet = [0,4]
             randRahmen = [0,0,0]
             activeTetramino = setTetramino("Z")
         elif cmdListe[eingabe]== "S":
-            posTet = [0,3]
+            posTet = [0,4]
             randRahmen = [0,0,0]
             activeTetramino = setTetramino("S")
         elif cmdListe[eingabe]== "J":
-            posTet = [0,3]
+            posTet = [0,4]
             randRahmen = [0,0,0]
             activeTetramino = setTetramino("J")
         elif cmdListe[eingabe]=="L":
             activeTetramino = setTetramino("L")
-            posTet = [0,3]
+            posTet = [0,4]
             randRahmen = [0,0,0]
         elif cmdListe[eingabe]=="T":
-            posTet = [0,3]
+            posTet = [0,4]
             randRahmen=[0,0,0]
             activeTetramino = setTetramino("T")
         elif cmdListe[eingabe]=="t":
-            ausgeben(activeTetramino)
+            ausgeben(activeTetramino,0,0,0)
         # Rotieren
         elif cmdListe[eingabe]==")":
             rg = rotateClockwise(matrix,activeTetramino, posTet ,randRahmen)
@@ -297,7 +307,7 @@ def inputVerarbeiten(matrix, activeTetramino, posTet, score, clearedLines, randR
             print("")
         elif cmdListe[eingabe] =="P":
             matrix = tetInMatrix(matrix, activeTetramino, posTet, True)
-            ausgeben(matrix)
+            ausgeben(matrix,1,1,1)
         # Tetramino verschieben:
         elif cmdListe[eingabe]=="<":
             rg = nachLinks(matrix, activeTetramino, posTet, randRahmen)
@@ -321,11 +331,17 @@ def inputVerarbeiten(matrix, activeTetramino, posTet, score, clearedLines, randR
 
 def main():
     #Startwerte setzen
-    matrix = [['.' for x in range(10)]for x in range(22)]
+    matrix = [['.' for x in range(12)]for x in range(23)]
+    #Spielfeldgrenzen eintragen:
+    for spalte in range(len(matrix[0])):
+        matrix[-1][spalte]='X'
+    for zeile in range(len(matrix)):
+        matrix[zeile][0]='X'
+        matrix[zeile][-1]='X'
     score = 0
     clearedLines = 0
     activeTetramino = []
-    posTet = [0,4]          # Position des Tetraminos [zeile,spalte]
+    posTet = [0,5]          # Position des Tetraminos [zeile,spalte]
     randRahmen = [0,0,0]    # definiert, wie weit andere Bloecke oder der Spielfeldrand 
                             # in das Tet hinein ragen
                             # [links,rechts, unten]
