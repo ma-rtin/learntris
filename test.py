@@ -139,28 +139,47 @@ def tetInMatrix(matrix, tet, posTet, caps):
                     matrix[posTet[0]+zeile][posTet[1]+spalte]=hilfsstring
     return matrix
 
-def nachLinks(matrix, activeTetramino, posTet, randRahmen):
-    moeglich=False
-    if posTet[1] > 1:
-        moeglich = True
-    else:
-        linkeSpalteLeer = True
-        for zeile in range(len(activeTetramino)):
-            if activeTetramino[zeile][randRahmen[0]]!='.':
-                linkeSpalteLeer = False
-        if linkeSpalteLeer:
-            moeglich=True
-            randRahmen[0]=randRahmen[0]+1
-    if moeglich:
+def nachLinks(matrix, actTet, posTet, randRahmen):
+#    moeglich=False
+#    if posTet[1] > 1:
+#        moeglich = True
+#    else:
+#        linkeSpalteLeer = True
+#        for zeile in range(len(activeTetramino)):
+#            if activeTetramino[zeile][randRahmen[0]]!='.':
+#                linkeSpalteLeer = False
+##        if linkeSpalteLeer:
+#            moeglich=True
+#            randRahmen[0]=randRahmen[0]+1
+#    if moeglich:
         # Tetramino verschieben
+       # posTet[1]=posTet[1]-1
+      #  rechteSpalte=posTet[1]+len(activeTetramino)-1
+     #   if randRahmen[1] != 0:
+    #        randRahmen[1]=  randRahmen[1]-1
+   #     # frei gewordenen Bereich leeren
+  #      for zeile in range(len(activeTetramino)):
+ #           if (rechteSpalte+1)<len(matrix[0])-1:
+#                matrix[posTet[0]+zeile][rechteSpalte+1]='.'
+    #Linke spalte vn activeTetramino mit linker spalte in matrix vergleichen
+
+    moeglich=True
+    for zeile in range(len(actTet)):
+        if actTet[zeile][randRahmen[0]]!='.': # wenn stelle nicht leer im actTet
+            if matrix[posTet[0]+zeile][posTet[1]-1]!='.': #schauen ob platz in matrix
+                moeglich=False
+    if moeglich:
+        # Tet verschieben:
         posTet[1]=posTet[1]-1
-        rechteSpalte=posTet[1]+len(activeTetramino)-1
-        if randRahmen[1] != 0:
-            randRahmen[1]=  randRahmen[1]-1
-        # frei gewordenen Bereich leeren
-        for zeile in range(len(activeTetramino)):
-            if (rechteSpalte+1)<len(matrix[0])-1:
+        # frei gewordenen Bereich leeren:
+        rechteSpalte = posTet[1]+len(actTet)-1
+        if (rechteSpalte+1)<len(matrix[0])-1:
+            for zeile in range(len(actTet)):
                 matrix[posTet[0]+zeile][rechteSpalte+1]='.'
+        # tet in matrix speichern
+        tetInMatrix(matrix, actTet, posTet, True)
+        #testen wie weit in den Rahmen verschoben wurde
+        randRahmen = randRahmenErmitteln(matrix, actTet, posTet, randRahmen)
     return [posTet, randRahmen]
 
 def nachRechts(matrix, activeTetramino, posTet, randRahmen):
@@ -225,15 +244,22 @@ def hardDrop(matrix, activeTet, posTet, randRahmen):
     matrix = tetInMatrix(matrix, activeTet, posTet, False)
     return matrix
 
-#def randRahmenErmitteln(matrix, activeTetramino, posTet, randRahmen)
+def randRahmenErmitteln(matrix, actTet, posTet, randRahmen):
     #links:
-
+    imRahmenLinks=False
+    for zeile in range(len(actTet)):
+        hilfsstring=str(actTet[zeile][randRahmen[0]])
+        hilfsstring=hilfsstring.upper()
+        if matrix[posTet[0]+zeile][posTet[1]]!=hilfsstring:
+            imRahmenLinks=True
+    if imRahmenLinks:
+        randRahmen[0]=randRahmen[0]+1
     #rechts:
 
     #unten:
 
 
-#    return randRahmen
+    return randRahmen
 
 def inputVerarbeiten(matrix, activeTetramino, posTet, score, clearedLines, randRahmen):
     cmd=raw_input()
