@@ -99,7 +99,7 @@ def setTetramino(tet):
         tetramino=[['.','m','.'],['m','m','m'],['.','.','.']]
     return tetramino
 
-def rotateClockwise(matrix, tet, posTet, randRahmen):
+def rotateClockwise(matrix, tet, posTet):
 # Rotiert das Tetramino im Uhrzeigersinn,
 # nur moeglich wenn der komplette Rahmen in der Matrix frei ist
 # spaeter verschieben, wenn ein Teil des Rahmens verdeckt ist
@@ -131,9 +131,9 @@ def rotateClockwise(matrix, tet, posTet, randRahmen):
             for spalte in range(len(tet[0])):
                 tetNeu[spalte][-1-zeile]=tet[zeile][spalte]
         tet=tetNeu
-    return [tet, posTet, randRahmen]
+    return [tet, posTet]
 
-def rotateCounterClockwise(matrix, tet, posTet, randRahmen):
+def rotateCounterClockwise(matrix, tet, posTet):
 
 # Rotiert das Tetramino gegen Uhrzeigersinn,
 # nur moeglich wenn der komplette Rahmen in der Matrix frei ist
@@ -166,7 +166,7 @@ def rotateCounterClockwise(matrix, tet, posTet, randRahmen):
             for spalte in range(len(tet[0])):
                 tetNeu[-1-spalte][zeile]=tet[zeile][spalte]
         tet=tetNeu
-    return [tet, posTet, randRahmen]
+    return [tet, posTet]
 
 def tetInMatrix(matrix, tet, posTet, caps):
 # Speichert einen Tetramino in die Matrix, dabei werden nur Werte von Stellen uebernommen,
@@ -191,7 +191,7 @@ def tetInMatrix(matrix, tet, posTet, caps):
                         matrix[posTet[0]+zeile][posTet[1]+spalte]=hilfsstring
     return matrix
 
-def nachLinks(matrix, actTet, posTet, randRahmen):
+def nachLinks(matrix, actTet, posTet):
 # Verschiebt da Tetramino nach Links, falls der Bereich nicht in der matrix blockiert wird
 
 # matrix        :Liste[][]
@@ -209,9 +209,6 @@ def nachLinks(matrix, actTet, posTet, randRahmen):
     if moeglich:
         # Tet verschieben:
         posTet[1]=posTet[1]-1
-        # rand rechts verkleinern
-        if randRahmen[1]!=0:
-            randRahmen[1]=randRahmen[1]-1
         # frei gewordenen Bereich leeren:
         for spalte in range(len(actTet[0])):
             for zeile in range(len(actTet)):
@@ -221,9 +218,9 @@ def nachLinks(matrix, actTet, posTet, randRahmen):
         # tet in matrix speichern
         tetInMatrix(matrix, actTet, posTet, True)
         #testen wie weit in den Rahmen verschoben wurde
-    return [posTet, randRahmen]
+    return posTet
 
-def nachRechts(matrix, actTet, posTet, randRahmen):
+def nachRechts(matrix, actTet, posTet):
 # Verschiebt da Tetramino nach rechts, falls der Bereich nicht in der matrix blockiert wird             
 
 # matrix        :Liste[][]
@@ -241,9 +238,6 @@ def nachRechts(matrix, actTet, posTet, randRahmen):
     if moeglich:
         # Tet verschieben:
         posTet[1]=posTet[1]+1
-        # rand links verkleinern
-        if randRahmen[0]!=0:
-            randRahmen[0]=randRahmen[0]-1
         # frei gewordenen Bereich leeren:
         for spalte in range(len(actTet[0])):
             if posTet[1]+spalte-1>=2:
@@ -252,10 +246,9 @@ def nachRechts(matrix, actTet, posTet, randRahmen):
                         matrix[posTet[0]+zeile][posTet[1]+spalte-1]='.'
         # tet in matrix speichern
         tetInMatrix(matrix, actTet, posTet, True)
-        #testen wie weit in den Rahmen verschoben wurde
-    return [posTet, randRahmen]
+    return posTet
 
-def nachUnten(matrix, actTet, posTet, randRahmen, gameOver):
+def nachUnten(matrix, actTet, posTet,  gameOver):
  # Verschiebt da Tetramino nach unten, falls der Bereich nicht in der matrix blockiert wird              
 # matrix        :Liste[][]
 # actTet        :Liste[][]
@@ -284,76 +277,19 @@ def nachUnten(matrix, actTet, posTet, randRahmen, gameOver):
         for spalte in range(len(matrix[0])-4):
             if matrix[0][spalte+2]!='.':
                 gameOver=True
-    return [posTet, randRahmen, moeglich, gameOver]
+    return [posTet, moeglich, gameOver]
 
-def hardDrop(matrix, activeTet, posTet, randRahmen, gameOver):
+def hardDrop(matrix, activeTet, posTet, gameOver):
 # verschiebt das Tetramino so weit nach unten wie moeglich
 
     moeglich=True
     while moeglich:
-        rg=nachUnten(matrix,activeTet, posTet, randRahmen, gameOver)
+        rg=nachUnten(matrix,activeTet, posTet, gameOver)
         posTet=rg[0]
-        randRahmen=rg[1]
-        moeglich=rg[2]
-        gameOver=rg[3]
+        moeglich=rg[1]
+        gameOver=rg[2]
     matrix = tetInMatrix(matrix, activeTet, posTet, False)
     return [matrix,gameOver]
-
-def randRahmenErmitteln(matrix, actTet, posTet, randRahmen):
-    #tet mit matrixinhalt vergleichen
-    #links:
-    imRahmenLinks=False
-    for zeile in range(len(actTet)-randRahmen[2]):
-        hilfsstring=str(actTet[zeile][randRahmen[0]])
-        hilfsstring=hilfsstring.upper()
-        if matrix[posTet[0]+zeile][posTet[1]]!=hilfsstring:
-            imRahmenLinks=True
-    if imRahmenLinks:
-        randRahmen[0]=randRahmen[0]+1
-    # links neu:
-#    spalteGefunden = False
-#    randRahmen[0]=0
-#    while not spalteGefunden:
-#        imRahmenLinks=False
-#        for zeile in range(len(actTet)-randRahmen[2]):
-#            print("zeile: "+str(zeile)+" spalte: "+str(randRahmen[0]))
-#            stringTet = str(actTet[zeile][randRahmen[0]])
-#            stringTet = stringTet.upper()
-#            print("sT: "+stringTet)
-#            stringMat = str(matrix[posTet[0]+zeile][posTet[1]])
-#            stringMat = stringMat.upper()
-#            print("sM: "+stringMat)
-#            if stringMat!=stringTet:
-#                imRahmenLinks=True
-#        if imRahmenLinks:
-#            randRahmen[0]=randRahmen[0]+1
-#        else:
-#            spalteGefunden=True
-    #rechts:
-    imRahmenRechts=False
-    for zeile in range(len(actTet)-randRahmen[2]):
-        hilfsstring=str(actTet[zeile][-1-randRahmen[1]])
-        hilfsstring=hilfsstring.upper()
-        if matrix[posTet[0]+zeile][posTet[1]+len(actTet[0])-1-randRahmen[1]]!=hilfsstring:
-            imRahmenRechts=True
-    if imRahmenRechts:
-        randRahmen[1]=randRahmen[1]+1
-    #unten:
-    #print("randErmitteln Unten:")
-    imRahmenUnten=False
-    for spalte in range(len(actTet[0])-randRahmen[0]-randRahmen[1]):
-        hilfsstring=str(actTet[-1][spalte+randRahmen[0]])
-        hilfsstring=hilfsstring.upper()
-        if matrix[posTet[0]+len(actTet)-1-randRahmen[2]][posTet[1]+spalte+randRahmen[0]]!=hilfsstring:
-            imRahmenUnten=True
-    if imRahmenUnten:
-        randRahmen[2]=randRahmen[2]+1
-
-    print("rr0: "+str(randRahmen[0]))
-    print("rr1: "+str(randRahmen[1]))
-    print("rr2: "+str(randRahmen[2]))
-
-    return randRahmen
 
 def mainMenu():
     print("Learntris (c) 1992 Tetraminex, Inc.")
@@ -361,12 +297,11 @@ def mainMenu():
     return
 
 def pauseScreen(matrix):
-    #ausgeben(matrix,1,1,1,True)
     print("Paused")
     print("Press start button to continue.")
     return
 
-def inputVerarbeiten(matrix, activeTetramino, posTet, score, clearedLines, randRahmen, status, gameOver):
+def inputVerarbeiten(matrix, activeTetramino, posTet, score, clearedLines, status, gameOver):
 # Inputs fuer Tests verarbeiten
 
     cmd=raw_input()
@@ -413,45 +348,36 @@ def inputVerarbeiten(matrix, activeTetramino, posTet, score, clearedLines, randR
         #aktives Tetramino setzen:
         elif cmdListe[eingabe]=="I":
             posTet = [0,5]
-            randRahmen = [0,0,0]
             activeTetramino = setTetramino("I")
         elif cmdListe[eingabe]=="O":
             posTet = [0,6]
-            randRahmen = [0,0,0]
             activeTetramino = setTetramino("O")
         elif cmdListe[eingabe]=="Z":
             posTet = [0,5]
-            randRahmen = [0,0,0]
             activeTetramino = setTetramino("Z")
         elif cmdListe[eingabe]== "S":
             posTet = [0,5]
-            randRahmen = [0,0,0]
             activeTetramino = setTetramino("S")
         elif cmdListe[eingabe]== "J":
             posTet = [0,5]
-            randRahmen = [0,0,0]
             activeTetramino = setTetramino("J")
         elif cmdListe[eingabe]=="L":
             activeTetramino = setTetramino("L")
             posTet = [0,5]
-            randRahmen = [0,0,0]
         elif cmdListe[eingabe]=="T":
             posTet = [0,5]
-            randRahmen=[0,0,0]
             activeTetramino = setTetramino("T")
         elif cmdListe[eingabe]=="t":
             ausgeben(activeTetramino,0,0,0,False)
         # Rotieren
         elif cmdListe[eingabe]==")":
-            rg = rotateClockwise(matrix,activeTetramino, posTet ,randRahmen)
+            rg = rotateClockwise(matrix,activeTetramino, posTet)
             activeTetramino = rg[0]
             posTet = rg[1]
-            randRahmen = rg[2]
         elif cmdListe[eingabe]=="(":
-            rg = rotateCounterClockwise(matrix,activeTetramino, posTet,randRahmen)
+            rg = rotateCounterClockwise(matrix,activeTetramino, posTet)
             activeTetramino = rg[0]
             posTet = rg[1]
-            randRahmen = rg[2]
         # Verschiedene Ausgabemoeglichkeiten
         elif cmdListe[eingabe] ==";":
             print("")
@@ -462,20 +388,15 @@ def inputVerarbeiten(matrix, activeTetramino, posTet, score, clearedLines, randR
                 print("Game Over")
         # Tetramino verschieben:
         elif cmdListe[eingabe]=="<":
-            rg = nachLinks(matrix, activeTetramino, posTet, randRahmen)
-            posTet = rg[0]
-            randRahmen = rg[1]
+            posTet = nachLinks(matrix, activeTetramino, posTet)
         elif cmdListe[eingabe]==">":
-            rg = nachRechts(matrix, activeTetramino, posTet, randRahmen)
-            posTet = rg[0]
-            randRahmen = rg[1]
+            posTet = nachRechts(matrix, activeTetramino, posTet)
         elif cmdListe[eingabe]=="v":
-            rg = nachUnten(matrix, activeTetramino, posTet, randRahmen, gameOver)
+            rg = nachUnten(matrix, activeTetramino, posTet, gameOver)
             posTet = rg[0]
-            randRahmen = rg[1]
-            gameOver = rg[3]
+            gameOver = rg[2]
         elif cmdListe[eingabe]=="V":
-            rg = hardDrop(matrix, activeTetramino, posTet, randRahmen, gameOver)
+            rg = hardDrop(matrix, activeTetramino, posTet, gameOver)
             matrix= rg[0]
             gameOver=rg[1]
             activeTetramino = []
@@ -483,7 +404,7 @@ def inputVerarbeiten(matrix, activeTetramino, posTet, score, clearedLines, randR
             print("falsche eingabe")
             print("input: " + cmdListe[eingabe])
         eingabe=eingabe+1
-    return [matrix, activeTetramino, posTet, score, clearedLines, randRahmen,status, gameOver]
+    return [matrix, activeTetramino, posTet, score, clearedLines, status, gameOver]
 
 def main():
     #Startwerte setzen
@@ -503,19 +424,15 @@ def main():
     clearedLines = 0
     activeTetramino = []
     posTet = [0,5]          # Position des Tetraminos [zeile,spalte]
-    randRahmen = [0,0,0]    # definiert, wie weit andere Bloecke oder der Spielfeldrand 
-                            # in das Tet hinein ragen
-                            # [links,rechts, unten]
     while True:
-        ergebnis=inputVerarbeiten(matrix, activeTetramino, posTet ,score, clearedLines, randRahmen, status, gameOver)
+        ergebnis=inputVerarbeiten(matrix, activeTetramino, posTet ,score, clearedLines, status, gameOver)
         matrix = ergebnis[0]
         activeTetramino = ergebnis[1]
         posTet = ergebnis[2]
         score = ergebnis[3]
         clearedLines = ergebnis[4]
-        randRahmen = ergebnis[5]
-        status=ergebnis[6]
-        gameOver = ergebnis[7]
+        status=ergebnis[5]
+        gameOver = ergebnis[6]
     return
 
 if __name__ == '__main__':
